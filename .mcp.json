@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "seedance": {
+      "type": "http",
+      "url": "https://seedance.mcp.acedata.cloud/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ACEDATA_SEEDANCE_KEY}"
+      }
+    },
+    "openai": {
+      "type": "http",
+      "url": "https://openai.mcp.acedata.cloud/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ACEDATA_OPENAI_KEY}"
+      }
+    },
+    "nanobanana": {
+      "type": "http",
+      "url": "https://nanobanana.mcp.acedata.cloud/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ACEDATA_NANOBANANA_KEY}"
+      }
+    }
+  }
+}
