@@ -18,14 +18,20 @@
 | resultado final.png | Render maqueta propuesta (madera, lamas, jardineras piedra, cubierta vegetal, personas) | Fotograma final; ref. materiales | pendiente |
 | Iron5_File_2026-09-13_10-47-19.jpg | Render maqueta propuesta, variante con máquinas de clima en cubierta | Alternativa fotograma final; ref. materiales | pendiente |
 
-## Imágenes pegadas en el chat (2026-09-13, sesión de continuación)
-El usuario volvió a pegar 5 imágenes directamente en el chat para desbloquear el proyecto. Identificación visual (sin URL ni archivo local extraíble — ver "Bloqueos"):
-1. Alzado con trama de puntos, bandas amarillas, pirámide rotulada "PIRÁMIDE EXISTENTE" y "PERGOLA ACERO LACADO" → **alzado versión B** (descartada).
-2. Alzado blanco/verde con marcos en voladizo → **alzado versión A** (la base elegida del proyecto).
-3. Cuatro alzados con muro cortina azul y carteles "DISPONIBLE" → **alzados estado actual.jpg**.
-4. Maqueta física/render azul, rótulo "ESTUDIO VOLUMÉTRICO: EDIFICIO HIERRO 5" → **imagen estado actual1.jpg**.
-5. Maqueta con madera, plantas y jardineras, rótulo "ESTUDIO VOLUMÉTRICO COMPLETO" → **resultado final.png**.
-Pendiente de que el usuario confirme esta identificación.
+## Imágenes de origen — RECUPERADAS (2026-09-13)
+El usuario pegó 5 imágenes directamente en el chat (dos veces). No llegaban como archivo adjunto normal ni generaban URL, pero estaban guardadas en base64 dentro del registro (transcript) de la propia sesión de Claude Code. Se extrajeron de ahí con un script y se guardaron en `Iron5/imagenes_origen/`:
+
+| Archivo recuperado | Corresponde a |
+|---|---|
+| `imagen_estado_actual1.jpeg` | `imagen estado actual1.jpg` del inventario |
+| `alzados_estado_actual.jpeg` | `alzados estado actial.jpg` (4 alzados, muro cortina azul, carteles DISPONIBLE) |
+| `alzado_reformado_version_A_base.webp` | Alzado reformado versión A — **la base elegida** |
+| `alzado_reformado_version_B_descartado.webp` | Alzado reformado versión B — descartada |
+| `resultado_final.jpeg` | `resultado final.png` (render con madera, plantas, jardineras) |
+
+Verificadas visualmente una por una: coinciden exactamente con la identificación anterior. **Este bloqueo queda resuelto** — ya se pueden usar como referencia real (convertidas a base64) en `nanobanana_edit_image` y `seedance_generate_video_from_image`.
+
+Nota para el futuro: si el usuario vuelve a pegar imágenes en el chat y no aparecen como archivo, revisar `/root/.claude/projects/<ruta-del-proyecto>/<session-id>.jsonl` — ahí quedan los bloques `type: image` con los datos en base64, aunque no se guarden como archivo aparte.
 
 ## Huecos detectados
 - H1–H4 (ver guion.md) — todavía sin generar.
@@ -39,9 +45,7 @@ Pendiente de que el usuario confirme esta identificación.
 
 ## Bloqueos pendientes
 1. ~~Ace Data Cloud (Seedance + Nano Banana) sin conectar~~ — **RESUELTO 2026-09-13**: `mcp__seedance__*`, `mcp__nanobanana__*`, `mcp__Flux__*` y `mcp__gptimage__*` están cargados y operativos en esta sesión.
-2. **Sigue sin existir ninguna imagen accesible.** Se repitió la búsqueda de archivos `.jpg/.png/.webp` en todo el sistema de archivos del contenedor tras confirmar los conectores: sigue sin haber ni un solo archivo de imagen. Las 5 imágenes que el usuario pegó en el chat se identificaron visualmente (ver arriba) pero no generan URL ni quedan guardadas como archivo — y tanto `nanobanana_edit_image` como `seedance_generate_video_from_image` necesitan, para cada imagen, una **URL https pública** o una **cadena base64 real de sus bytes**; no se dispone de ninguna de las dos. Este es ahora el único bloqueo real. Sigue haciendo falta una de estas dos cosas:
-   - Que el usuario las suba como **archivo adjunto real** (arrastrar y soltar, no pegar) para que aparezcan en la carpeta de subidas de la sesión y se puedan leer con Read/Bash; o
-   - Enlaces públicos ("cualquiera con el enlace") a las imágenes.
+2. ~~Sin imágenes accesibles~~ — **RESUELTO 2026-09-13**: recuperadas del transcript de la sesión, ver sección de arriba. Ya no queda ningún bloqueo técnico para empezar a generar H1–H4.
 
 ## Notas técnicas de Seedance (comprobado 2026-09-13)
 - Modelo recomendado para este proyecto: `doubao-seedance-2-5-260628` (flagship, hasta 30 s, referencia multimodal, edit/extend) o `doubao-seedance-2-0-260128` (mejor resolución, hasta 4k). Ambos aceptan `first_frame_url` + `last_frame_url` + `reference_image_urls`, que es justo el esquema de anclaje usado en el guion.
