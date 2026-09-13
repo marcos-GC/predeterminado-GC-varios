@@ -41,11 +41,25 @@ export ACEDATA_NANOBANANA_KEY=...
 
 ## Comprobación
 
+`claude mcp list` **no basta** para saber si las claves funcionan. En un
+proyecto recién clonado los servidores salen como `⏸ Pending approval` y ni
+siquiera se intenta el health-check. Y aunque estén aprobados, un listado de
+modelos responde igual con clave y sin ella: los catálogos son estáticos y no
+autentican. Es un falso positivo.
+
+La prueba que sí discrimina es una consulta de tarea inexistente: es gratuita,
+no genera nada, y la API responde distinto según la credencial.
+
 ```bash
-claude mcp list
+claude -p "Llama a seedance_get_task con task_id 00000000-0000-0000-0000-000000000000" \
+  --mcp-config .mcp.json --strict-mcp-config \
+  --allowedTools "mcp__seedance__seedance_get_task"
 ```
 
-Los tres deben aparecer como `√ Connected`.
+- Clave correcta → `{"result":"{}"}`
+- Clave ausente o inválida → `The token is invalid, please make sure your token is correct.`
+
+Equivalentes: `nanobanana_get_task` y `openai_list_tasks`.
 
 ## Notas
 
@@ -54,6 +68,13 @@ Los tres deben aparecer como `√ Connected`.
 - Si se registran a mano con `claude mcp add`, el flag de cabecera es `-H`
   (mayúscula). Con `-h` el CLI lo interpreta como `--help` y no registra nada,
   sin mostrar ningún error.
+- **Sin las variables de entorno definidas, las herramientas aparecen igualmente
+  disponibles.** Nada avisa de que falta la credencial hasta la primera llamada
+  real, que falla con `The token is invalid`. Conviene definirlas antes de
+  lanzar una generación.
+- Cada servicio tiene su propia clave. Una clave puede autenticar en las
+  llamadas de lectura de otro servicio y aun así fallar al generar con
+  `token and api does not match`.
 
 ## Costes medidos (13-09-2026)
 
