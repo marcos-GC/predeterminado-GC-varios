@@ -60,4 +60,11 @@ Nota para el futuro: si el usuario vuelve a pegar imágenes en el chat y no apar
 5. Pedir confirmación antes de cada tanda de generaciones cara. Descargar a `clips/` y anotarlo aquí.
 
 ## Generaciones
-(ninguna todavía)
+### 1. Prueba G4 (2026-09-13)
+- **Modelo**: `doubao-seedance-2-0-260128`, 480p, 16:9, 10 s.
+- **Anclaje**: primer fotograma = `alzado_reformado_version_A_base.webp` (URL raw.githubusercontent.com de este mismo repo/rama). Último fotograma = `resultado_final.jpeg` (se usó en vez de `Iron5_File_...jpg`, que no está recuperado; visualmente es casi el mismo render).
+- **Prompt**: el de G4 en `prompts_en.md`.
+- **Resultado**: éxito. `task_id` = `54a9df3b-bd69-4f2a-975e-f09bba4e4a0c`. Coste: 7.8 créditos.
+- **Vídeo**: https://platform2.cdn.acedata.cloud/seedance/54a9df3b-bd69-4f2a-975e-f09bba4e4a0c.mp4
+- **Nota técnica**: el sandbox de esta sesión bloquea por política de red la descarga directa desde `platform2.cdn.acedata.cloud` (egress proxy, 403), así que el .mp4 no se pudo copiar a `Iron5/clips/` esta vez. El usuario puede descargarlo directamente desde el enlace de arriba. Si hace falta guardarlo en el repo, probar en una sesión/entorno sin esa restricción, o pedir al usuario que lo suba él mismo.
+- Pendiente de que el usuario lo revise y dé el visto bueno antes de seguir con el resto de generaciones.
