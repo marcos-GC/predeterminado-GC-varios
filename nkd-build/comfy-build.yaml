@@ -1,27 +1,65 @@
 schema: comfy-build/1
 id: null
 name: nkd-basic-klein
-description: ''
+description: 'NKD Basic Tools + NKD Klein Tools on FLUX.3 Image Klein (distilled, int8): inpaint crop/stitch and face detailing.'
 syncedRevision: null
 definition:
   schema: distribution-definition/0
-  models: []
+  baseComfyVersion: v0.46.1
+  baseImage: cuda130-py312
+  models:
+    # FLUX.3 Image Klein distilled, int8 ConvRot: the set NKD's own
+    # "Klein 3 Distilled" example loads. black-forest-labs/flux-3-image-klein-comfy
+    # is gated (anonymous 401), so these point at the ml-resources mirror; sizes
+    # match BFL's listing byte for byte, and the builder resolver reports the same
+    # sha256 for both repos on the diffusion model and the VAE.
+    - type: diffusion_models
+      filename: flux3-image-klein-int8-convrot.safetensors
+      sourceUri: https://huggingface.co/ml-resources/flux-3-image-klein-comfy/resolve/main/diffusion_models/flux3-image-klein-int8-convrot.safetensors
+      sha256: 847d8933548afd93df4af2cac2498e70891bf28d9dae06d695f536992e168fe2
+    - type: text_encoders
+      filename: qwen3vl_4b_int8_convrot.safetensors
+      sourceUri: https://huggingface.co/ml-resources/flux-3-image-klein-comfy/resolve/main/text_encoders/qwen3vl_4b_int8_convrot.safetensors
+      sha256: 32de113cbf8282b02cbff0794b637b9d6676da09314a1db5a30bcea9bf4ee01c
+    # Prompt upsampler for NKD Klein Presampling (Klein 3): expands short
+    # inpaint/face requests into the detailed prompt FLUX.3 expects.
+    - type: text_encoders
+      filename: qwen3.5_9b_flux3_prompt_upsampler_int8_convrot.safetensors
+      sourceUri: https://huggingface.co/ml-resources/flux-3-image-klein-comfy/resolve/main/text_encoders/qwen3.5_9b_flux3_prompt_upsampler_int8_convrot.safetensors
+      sha256: cb8cb9b9dcd2569509de755dca54d96fd93a16a7aabfd2f4051f0a144230620f
+    - type: vae
+      filename: flux2-vae.safetensors
+      sourceUri: https://huggingface.co/ml-resources/flux-3-image-klein-comfy/resolve/main/vae/flux2-vae.safetensors
+      sha256: 868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3
+    # NKD Face Crop / Face Stitch weights. Basic Tools downloads these on first
+    # run otherwise (cold start). Paths match nkd_face_core.py:
+    #   models/liveportrait/liveportrait/landmark.onnx  (LIGHT_WEIGHTS)
+    #   models/facedetection/face_detection_yunet_2023mar.onnx
+    - type: liveportrait/liveportrait
+      filename: landmark.onnx
+      sourceUri: https://huggingface.co/KlingTeam/LivePortrait/resolve/main/liveportrait/landmark.onnx
+      sha256: 31d22a5041326c31f19b78886939a634a5aedcaa5ab8b9b951a1167595d147db
+    - type: facedetection
+      filename: face_detection_yunet_2023mar.onnx
+      sourceUri: https://huggingface.co/opencv/face_detection_yunet/resolve/main/face_detection_yunet_2023mar.onnx
+      sha256: 8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4
   customNodes:
-    - id: comfyui-nkd-basic-tools
-      localPath: ComfyUI-NKD-Basic-Tools
-      name: ComfyUI-NKD-Basic-Tools
-      registryVersion: 1.27.0
-      source: registry
+    # Every registry version of Basic Tools since 1.15.0 is "Flagged" and the
+    # builder refuses to resolve it, so this pins the GitHub tag v1.27.0 by
+    # commit (same code as the registry 1.27.0 zip, checked file by file).
+    - name: ComfyUI-NKD-Basic-Tools
+      repository: https://github.com/Nekodificador/ComfyUI-NKD-Basic-Tools
+      gitRef: 90d55c175c818503c0f9422506b42dc8b43d4de6
     - id: comfyui-nkd-klein-tools
-      localPath: ComfyUI-NKD-Klein-Tools
       name: ComfyUI-NKD-Klein-Tools
       registryVersion: 1.13.4
       source: registry
+  # The builder only reads requirements.txt files, and NKD Basic Tools ships
+  # none (its deps live in pyproject.toml); both packs also import cv2 without
+  # declaring it, and ComfyUI core provides neither. Wheel-address lines are
+  # installed even when no requirements.txt asks for them. Wheels match
+  # baseImage cuda130-py312 (Python 3.12, linux x86_64). huggingface_hub
+  # already comes in through core's transformers.
   pipDependencies: |
-    onnxruntime
-    huggingface_hub
-  environment:
-    arch: x86_64
-    os: Linux
-    pythonVersion: 3.13.18
-    torch: null
+    onnxruntime @ https://files.pythonhosted.org/packages/a3/81/55845186c20cba59f614991f4065dea148e48eeb9749893768c85ce64327/onnxruntime-1.32.0-cp312-cp312-manylinux_2_28_x86_64.whl#sha256=99e1074c4b2197accd5073052a465361be17b89c093b8ffb6e6bd8f986c52df8
+    opencv-python-headless @ https://files.pythonhosted.org/packages/c2/be/cdf44e32b580af6c0e8f237665c538e6a5a37872f865e92e08fb854d5fd9/opencv_python_headless-5.1.0.95-cp37-abi3-manylinux_2_28_x86_64.whl#sha256=7d387d4a64abe0c737440d38b5a90822f9bbcc10c8ce06a35904d6ecf7a2fb30
