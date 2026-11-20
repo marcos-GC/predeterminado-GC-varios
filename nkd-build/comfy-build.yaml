@@ -1,0 +1,27 @@
+schema: comfy-build/1
+id: null
+name: nkd-basic-klein
+description: ''
+syncedRevision: null
+definition:
+  schema: distribution-definition/0
+  models: []
+  customNodes:
+    - id: comfyui-nkd-basic-tools
+      localPath: ComfyUI-NKD-Basic-Tools
+      name: ComfyUI-NKD-Basic-Tools
+      registryVersion: 1.27.0
+      source: registry
+    - id: comfyui-nkd-klein-tools
+      localPath: ComfyUI-NKD-Klein-Tools
+      name: ComfyUI-NKD-Klein-Tools
+      registryVersion: 1.13.4
+      source: registry
+  pipDependencies: |
+    onnxruntime
+    huggingface_hub
+  environment:
+    arch: x86_64
+    os: Linux
+    pythonVersion: 3.13.18
+    torch: null
