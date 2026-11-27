@@ -460,13 +460,32 @@ module GrupoCosmic
 
       def commit(growth)
         if growth.any? { |g| g.abs >= TOL } && !@preview.empty?
-          vectors = vectors_for(growth)
           list = items
           run_stretch(@model, 'Estirar por caja') do
-            @engine.apply(list, @model.active_entities, IDENTITY, vectors)
+            stretch_axis_by_axis(list, growth)
           end
         end
         rebuild
+      end
+
+      # Estirar por una esquina equivale a estirar cada eje por separado, uno
+      # tras otro (los divisores son perpendiculares entre sí). Hacerlo así
+      # deja que un objeto entero a un lado de un divisor se desplace como
+      # objeto en ese eje aunque otro divisor lo corte.
+      def stretch_axis_by_axis(list, growth)
+        @handle.axes.each do |k|
+          next if growth[k].abs < TOL
+          out = outward(k)
+          plane_point = @box.divider_point(k, divider(k))
+          regions = [Regions::HalfSpace.new(plane_point, out)]
+          vectors = [scaled(out, growth[k])]
+          if @symmetric
+            regions << Regions::HalfSpace.new(plane_point, scaled(out, -1))
+            vectors << scaled(out, -growth[k])
+          end
+          Engine.new(regions, Settings.make_unique?)
+                .apply(list, @model.active_entities, IDENTITY, vectors)
+        end
       end
 
       def ask_dimension
