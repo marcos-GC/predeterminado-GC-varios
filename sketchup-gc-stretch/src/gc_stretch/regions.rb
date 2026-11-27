@@ -44,6 +44,54 @@ module GrupoCosmic
         end
       end
 
+      # Celda entre varios planos divisores (uno por eje que se estira a la vez).
+      # Cada plano pide un lado: :pos (el del tirador), :neg (el contrario),
+      # :mid (justo sobre el plano) o :notpos (cualquiera salvo el del tirador).
+      class Cell
+        # constraints: lista de [punto, normal, lado]
+        def initialize(constraints)
+          @constraints = constraints
+        end
+
+        def contains?(pt)
+          @constraints.all? do |point, normal, state|
+            d = Regions.dot(pt, point, normal)
+            case state
+            when :pos then d > TOL
+            when :neg then d < -TOL
+            when :mid then d.abs <= TOL
+            else d <= TOL
+            end
+          end
+        end
+
+        # Como en HalfSpace: lo que se apoya en un plano cuenta como entero en
+        # el lado en el que tiene el resto.
+        def contains_all?(pts)
+          @constraints.all? do |point, normal, state|
+            ds = pts.map { |pt| Regions.dot(pt, point, normal) }
+            case state
+            when :pos then ds.all? { |d| d >= -TOL } && ds.any? { |d| d > TOL }
+            when :neg then ds.all? { |d| d <= TOL } && ds.any? { |d| d < -TOL }
+            when :mid then ds.all? { |d| d.abs <= TOL }
+            else ds.all? { |d| d <= TOL }
+            end
+          end
+        end
+
+        def excludes_all?(pts)
+          @constraints.any? do |point, normal, state|
+            ds = pts.map { |pt| Regions.dot(pt, point, normal) }
+            case state
+            when :pos then ds.none? { |d| d > TOL }
+            when :neg then ds.none? { |d| d < -TOL }
+            when :mid then ds.all? { |d| d > TOL } || ds.all? { |d| d < -TOL }
+            else ds.all? { |d| d > TOL }
+            end
+          end
+        end
+      end
+
       # Ventana dibujada en pantalla, convertida en una pirámide (o prisma, en
       # proyección paralela) de cuatro planos que se aleja de la cámara.
       class Frustum

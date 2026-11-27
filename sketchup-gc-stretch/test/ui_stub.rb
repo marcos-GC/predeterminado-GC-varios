@@ -73,6 +73,15 @@ module Geom
     end
   end
 
+  def self.intersect_line_plane(line, plane)
+    p, d = line
+    o, n = plane
+    den = d.dot(n)
+    return nil if den.abs < 1.0e-12
+    t = ((o.x - p.x) * n.x + (o.y - p.y) * n.y + (o.z - p.z) * n.z) / den
+    Point3d.new(p.x + d.x * t, p.y + d.y * t, p.z + d.z * t)
+  end
+
   def self.closest_points(l1, l2)
     p1, d1 = l1
     p2, d2 = l2
@@ -103,6 +112,15 @@ module UI
 
   def self.start_timer(*)
     yield
+  end
+
+  class << self
+    attr_accessor :answers
+  end
+
+  def self.inputbox(prompts, _defaults, _title)
+    raise 'número de campos' unless prompts.size == answers.size
+    answers
   end
 end
 
@@ -151,6 +169,10 @@ module Sketchup
 
     def pick_helper
       @helper
+    end
+
+    def camera
+      Struct.new(:direction).new(Geom::Vector3d.new(0, 1, 0))
     end
 
     def invalidate; end

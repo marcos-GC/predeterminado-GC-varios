@@ -43,6 +43,80 @@ class ToolsTest < Minitest::Test
     xs.minmax
   end
 
+  def z_max(entities = @model.active_entities, tr = T.new)
+    zs = []
+    entities.each do |e|
+      if e.is_a?(Sketchup::Edge)
+        e.vertices.each { |v| zs << v.position.transform(tr).z.round(6) }
+      elsif e.is_a?(Sketchup::ComponentInstance)
+        zs << z_max(e.definition.entities, tr * e.transformation)
+      end
+    end
+    zs.max
+  end
+
+  # La esquina superior derecha de la caja se ve en pantalla en (1100, -120).
+  def grab_corner(tool)
+    tool.onMouseMove(0, 1100, -120, @view)
+    tool.onLButtonDown(0, 1100, -120, @view)
+    tool.onLButtonUp(0, 1100, -120, @view)
+  end
+
+  def test_caja_esquina_estira_dos_ejes_a_la_vez
+    tool = box_tool
+    grab_corner(tool)
+    tool.onMouseMove(0, 1130, -160, @view)
+    tool.draw(@view)
+    tool.getExtents
+    assert_equal '30.0; 0.0; 40.0', Sketchup.vcb_value
+    tool.onLButtonDown(0, 1130, -160, @view)
+    assert_equal [1000.0, 1130.0], x_range
+    assert_equal 160.0, z_max
+    # Divisores en x=1050 y z=60: la pata izquierda solo crece en alto; la
+    # central, en alto y en ancho; la derecha crece en alto y se desplaza.
+    assert_equal [2.0, 48.0, 124.0], leg_origins
+    sizes = @legs.map do |leg|
+      b = leg.definition.bounds
+      [(b.max.x - b.min.x).round(6), (b.max.z - b.min.z).round(6)]
+    end
+    assert_equal [[4.0, 140.0], [34.0, 140.0], [4.0, 140.0]], sizes
+    assert_equal ['Estirar por caja'], @model.operations
+  end
+
+  def test_caja_esquina_medidas_escritas
+    tool = box_tool
+    grab_corner(tool)
+    tool.onUserText('10', @view)
+    assert_equal [1000.0, 1110.0], x_range
+    assert_equal 130.0, z_max
+    tool.onMouseMove(0, 1110, -130, @view)
+    tool.onLButtonDown(0, 1110, -130, @view)
+    tool.onLButtonUp(0, 1110, -130, @view)
+    tool.onUserText('=150; 20; 200', @view)
+    assert_equal [1000.0, 1150.0], x_range
+    assert_equal 200.0, z_max
+    tool.onMouseMove(0, 1150, -200, @view)
+    tool.onLButtonDown(0, 1150, -200, @view)
+    tool.onLButtonUp(0, 1150, -200, @view)
+    tool.onUserText('1; 2', @view) # faltan medidas: no hace nada
+    UI.answers = %w[160 20 210]
+    tool.onKeyDown(9, 1, 0, @view)
+    assert_equal [1000.0, 1160.0], x_range
+    assert_equal 210.0, z_max
+  end
+
+  def test_caja_esquina_simetrica
+    tool = box_tool
+    tool.onKeyDown(COPY_MODIFIER_KEY, 1, 0, @view)
+    grab_corner(tool)
+    tool.onMouseMove(0, 1110, -125, @view)
+    tool.draw(@view)
+    assert_equal '20.0; 0.0; 10.0', Sketchup.vcb_value
+    tool.onLButtonDown(0, 1110, -125, @view)
+    assert_equal [990.0, 1110.0], x_range
+    assert_equal 125.0, z_max
+  end
+
   def leg_origins
     @legs.map { |l| l.transformation.origin.x.round(6) }
   end

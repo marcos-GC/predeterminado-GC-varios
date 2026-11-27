@@ -43,10 +43,19 @@ se pinta en rojo para avisar.
 ## Estirar por caja
 
 1. Selecciona un grupo o componente (o haz clic en él con la herramienta activa).
-2. Aparece una caja naranja con un **tirador verde** en cada cara y un **plano
-   divisor morado** en el centro.
+2. Aparece una caja naranja con un **tirador verde** en cada cara, un **tirador
+   azul** en cada esquina y un **plano divisor morado** en el centro.
 3. Haz clic en un tirador, mueve el ratón y vuelve a hacer clic (o pulsa, arrastra
    y suelta). Se mueve lo que hay entre el divisor y ese tirador.
+
+- **Tiradores de esquina**: estiran varios ejes a la vez (largo, ancho y alto),
+  cada uno con su propio divisor; al pasar por una esquina se ven los tres
+  planos. Con el ratón la esquina se desliza por la cara de la caja que mejor se
+  ve desde la cámara, así que cambian dos medidas; la tercera cambia si ajustas
+  el cursor a un punto o arista del modelo, o si escribes las medidas. Al
+  escribir, una sola medida vale para todos los ejes (`100`) y varias separadas
+  por punto y coma van en orden rojo; verde; azul (`100; 0; 50`, o las finales
+  `=2400; 600; 900`).
 
 - **Medida exacta**: mientras estiras, escribe cuánto debe crecer (`300`, o `-300`
   para acortar) o la medida final con un igual delante (`=2400`). La tecla Tab abre
@@ -82,7 +91,6 @@ se pinta en rojo para avisar.
 - Si se mueve solo parte de un arco o un círculo, deja de ser un arco.
 - Una cara inclinada a la que solo se le mueve parte de los vértices puede quedar
   plegada en triángulos, igual que con la herramienta Mover.
-- La herramienta por caja estira de un eje cada vez (no hay tiradores de esquina).
 
 ## Para desarrollar
 

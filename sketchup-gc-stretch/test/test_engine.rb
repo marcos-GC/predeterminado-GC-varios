@@ -205,6 +205,25 @@ class EngineTest < Minitest::Test
     assert_equal [1000.0, 1125.0], extents(root)[0]
   end
 
+  def test_celda_entre_dos_divisores
+    px = [P.new(5, 0, 0), V.new(1, 0, 0)]
+    pz = [P.new(0, 0, 5), V.new(0, 0, 1)]
+    both = Regions::Cell.new([px + [:pos], pz + [:pos]])
+    only_x = Regions::Cell.new([px + [:pos], pz + [:notpos]])
+    assert both.contains?(P.new(6, 0, 6))
+    refute both.contains?(P.new(6, 0, 5))
+    assert only_x.contains?(P.new(6, 0, 5))
+    refute only_x.contains?(P.new(5, 0, 1))
+    resting = [P.new(5, 0, 6), P.new(9, 0, 9)]
+    assert both.contains_all?(resting), 'apoyado en el divisor cuenta como dentro'
+    refute only_x.contains_all?(resting)
+    assert both.excludes_all?([P.new(0, 0, 9), P.new(5, 0, 7)])
+    refute both.excludes_all?([P.new(0, 0, 9), P.new(9, 0, 9)])
+    mid = Regions::Cell.new([px + [:neg], pz + [:mid]])
+    assert mid.contains?(P.new(1, 0, 5))
+    assert mid.excludes_all?([P.new(1, 0, 6), P.new(2, 0, 9)])
+  end
+
   def test_suma_y_resta_de_regiones
     c = Regions::Composite.new
     assert c.empty?

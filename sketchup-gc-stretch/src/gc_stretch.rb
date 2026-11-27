@@ -6,7 +6,7 @@ require 'extensions.rb'
 
 module GrupoCosmic
   module GCStretch
-    VERSION = '1.0.0'.freeze
+    VERSION = '1.1.0'.freeze
 
     unless file_loaded?(__FILE__)
       extension = SketchupExtension.new('GC Stretch', 'gc_stretch/main')

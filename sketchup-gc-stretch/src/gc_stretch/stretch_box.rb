@@ -5,7 +5,15 @@
 module GrupoCosmic
   module GCStretch
     class StretchBox
-      Handle = Struct.new(:axis, :side, :position)
+      Handle = Struct.new(:sides, :position) do
+        def axes
+          (0..2).reject { |k| sides[k].zero? }
+        end
+
+        def corner?
+          axes.size > 1
+        end
+      end
 
       attr_reader :frame, :min, :max
 
@@ -49,18 +57,40 @@ module GrupoCosmic
         end
       end
 
-      # Un tirador en el centro de cada cara, salvo en direcciones sin grosor.
+      def thick_axes
+        (0..2).select { |k| size(k) >= TOL }
+      end
+
+      # Un tirador en el centro de cada cara (estira un eje) y otro en cada
+      # esquina (estira a la vez todos los ejes con grosor). `sides` dice, por
+      # eje, hacia qué lado tira: -1, 0 (no tira) o 1.
       def handles
+        thick = thick_axes
         list = []
-        3.times do |k|
-          next if size(k) < TOL
+        thick.each do |k|
           [-1, 1].each do |side|
-            c = center
-            c[k] = side > 0 ? @max[k] : @min[k]
-            list << Handle.new(k, side, point(c))
+            sides = [0, 0, 0]
+            sides[k] = side
+            list << handle(sides)
+          end
+        end
+        if thick.size > 1
+          [-1, 1].repeated_permutation(thick.size).each do |combo|
+            sides = [0, 0, 0]
+            thick.each_with_index { |k, i| sides[k] = combo[i] }
+            list << handle(sides)
           end
         end
         list
+      end
+
+      def handle(sides)
+        c = center
+        3.times do |k|
+          c[k] = @max[k] if sides[k] > 0
+          c[k] = @min[k] if sides[k] < 0
+        end
+        Handle.new(sides, point(c))
       end
 
       # Posición del divisor del eje k: la pedida, o el centro si no hay o se sale.
@@ -89,18 +119,16 @@ module GrupoCosmic
         end
       end
 
-      # Caja resultante de crecer `growth` por el lado del tirador (y lo mismo
-      # por el contrario si es simétrico).
+      # Caja resultante de crecer growth[k] en cada eje por el lado del tirador
+      # (y lo mismo por el contrario si es simétrico).
       def grown(handle, growth, symmetric)
         mn = @min.dup
         mx = @max.dup
-        k = handle.axis
-        if handle.side > 0
-          mx[k] += growth
-          mn[k] -= growth if symmetric
-        else
-          mn[k] -= growth
-          mx[k] += growth if symmetric
+        3.times do |k|
+          side = handle.sides[k]
+          next if side.zero?
+          mx[k] += growth[k] if side > 0 || symmetric
+          mn[k] -= growth[k] if side < 0 || symmetric
         end
         corners(mn, mx)
       end
